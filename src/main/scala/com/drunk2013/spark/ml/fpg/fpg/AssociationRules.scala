@@ -1,7 +1,7 @@
-package com.github2013.spark.ml.fpg
+package com.drunk2013.spark.ml.fpg
 
-import com.github2013.spark.ml.fpg.AssociationRules.Rule
-import com.github2013.spark.ml.fpg.FPGrowth.FreqItemset
+import AssociationRules.Rule
+import FPGrowth.FreqItemset
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -35,27 +35,40 @@ class AssociationRules private[fpg](
   /**
     * 通过频繁数据集项
     *
-    * @param freqItemsets 频繁数据集
+    * @param freqItemsets 频繁项集
     * @tparam Item 反射类型
     * @return 返回关联规则信息
     */
   def run[Item: ClassTag](freqItemsets: RDD[FreqItemset[Item]]): RDD[Rule[Item]] = {
+    //println(s"partitions count:${freqItemsets.getNumPartitions}")
     // For candidate rule X => Y, generate (X, (Y, freq(X union Y)))
     val candicates = freqItemsets.flatMap { itemset =>
       val items = itemset.items
       items.flatMap { item =>
+        //        println(s"item:${item}")
+        //        println(s"items:${items.mkString("[", ",", "]")}")
+        //        println(s"item.partition:${items.partition(_ == item)._1.mkString(",")}")
+        //        println(s"item.partition:${items.partition(_ == item)._2.mkString(",")}")
+
+        //按条件将序列拆分成两个新的序列，满足条件的放到第一个序列中，其余的放到第二个序列,=item的放入第一项,其余放入第二项
         items.partition(_ == item) match {
           case (consequent, antecedent) if !antecedent.isEmpty =>
+            //把剩余项做key,剩余做前置项,并把合集中的freq做合集中作频繁次数
             Some((antecedent.toSeq, (consequent.toSeq, itemset.freq)))
           case _ => None
         }
       }
     }
+    //    candicates.collect.foreach(println) //查看数据结构
     // Join to get (X, ((Y, freq(X union Y)), freq(X))), generate rules, and filter by confidence
-    candicates.join(freqItemsets.map(x => (x.items.toSeq, x.freq)))
+    //关联,生成关联规则
+    val result = candicates.join(freqItemsets.map(x => (x.items.toSeq, x.freq)))
       .map { case (anticedent, ((consequent, freqUnion), freqAnticedent)) =>
         new Rule(anticedent.toArray, consequent.toArray, freqUnion, freqAnticedent)
       }.filter(_.confidence >= minConfidence)
+
+    //    result.collect.foreach(println)
+    result
   }
 }
 

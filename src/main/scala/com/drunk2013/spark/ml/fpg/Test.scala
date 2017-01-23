@@ -1,4 +1,4 @@
-package org.github2013.spark.ml
+package com.drunk2013.spark.ml.fpg
 
 import org.apache.spark.{SparkContext, SparkConf}
 
