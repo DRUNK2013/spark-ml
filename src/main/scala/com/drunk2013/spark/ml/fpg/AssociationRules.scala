@@ -1,7 +1,7 @@
 package com.drunk2013.spark.ml.fpg
 
-import AssociationRules.Rule
-import FPGrowth.FreqItemset
+import com.drunk2013.spark.ml.fpg.AssociationRules.Rule
+import com.drunk2013.spark.ml.fpg.FPGrowth.FreqItemset
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag

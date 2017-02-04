@@ -1,13 +1,13 @@
 package com.drunk2013.spark.ml.fpg
 
 import java.{util => ju}
-import FPGrowth.FreqItemset
-import org.apache.spark.storage.StorageLevel
-import org.apache.spark.{HashPartitioner, SparkException, Partitioner}
-import org.apache.spark.mllib.util.Saveable
-import org.apache.spark.rdd.RDD
-import scala.collection.mutable
 
+import com.drunk2013.spark.ml.fpg.FPGrowth.FreqItemset
+import org.apache.spark.rdd.RDD
+import org.apache.spark.storage.StorageLevel
+import org.apache.spark.{HashPartitioner, Partitioner, SparkException}
+
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -17,7 +17,7 @@ import scala.reflect.ClassTag
 class FPGrowthModel[Item: ClassTag](
                                      val freqItemsets: RDD[FreqItemset[Item]]
                                    ) extends Serializable {
-  def genetateAssociationRules(confidence: Double): RDD[AssociationRules.Rule[Item]] = {
+  def generateAssociationRules(confidence: Double): RDD[AssociationRules.Rule[Item]] = {
     val associationRules = new AssociationRules(confidence)
     associationRules.run(freqItemsets)
   }
@@ -47,7 +47,7 @@ class FPGrowth private(private var minSupport: Double,
     }
     val count = data.count()
     val minCount = math.ceil(minSupport * count).toLong
-    val numParts = if (numPartitions > 0) numPartitions else data.partitions.lengthf
+    val numParts = if (numPartitions > 0) numPartitions else data.partitions.length
     val partitioner = new HashPartitioner(numParts)
     val freqItems = genFreqItems(data, minCount, partitioner)
     val freqItemsets = genFreqItemsets(data, minCount, freqItems, partitioner)

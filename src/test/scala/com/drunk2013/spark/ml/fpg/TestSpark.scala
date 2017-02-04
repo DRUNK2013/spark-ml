@@ -1,11 +1,11 @@
 package com.drunk2013.spark.ml.fpg
 
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
   * Created by shuangfu on 17-1-20.
   */
-object Test {
+object TestSpark {
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().setAppName("spark_ml_src")
       .setMaster("local[*]")
