@@ -5,9 +5,10 @@ package com.drunk2013.spark.sql
   * Author : DRUNK
   * email :len1988.zhang@gmail.com
   */
-import org.apache.spark.sql.execution.datasources.jdbc.{JDBCOptions, JDBCPartitioningInfo, JdbcUtils}
-import org.apache.spark.sql.{AnalysisException, DataFrame, SQLContext, SaveMode}
-import org.apache.spark.sql.execution.datasources.jdbc.JdbcUtils._
+
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
+import com.drunk2013.spark.sql.JdbcUtils._
+import org.apache.spark.sql.execution.datasources.jdbc.JDBCPartitioningInfo
 import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, DataSourceRegister, RelationProvider}
 
 class JdbcRelationProvider extends CreatableRelationProvider
@@ -29,20 +30,31 @@ class JdbcRelationProvider extends CreatableRelationProvider
       null
     } else {
       assert(lowerBound.nonEmpty && upperBound.nonEmpty && numPartitions.nonEmpty)
-      JDBCPartitioningInfo(
-        partitionColumn.get, lowerBound.get, upperBound.get, numPartitions.get)
+      //      JDBCPartitioningInfo(
+      //        partitionColumn.get, lowerBound.get, upperBound.get, numPartitions.get)
+      null
     }
-    val parts = JDBCRelation.columnPartition(partitionInfo)
-    JDBCRelation(parts, jdbcOptions)(sqlContext.sparkSession)
+    //    val parts = JDBCRelation.columnPartition(partitionInfo)
+    //    JDBCRelation(parts, jdbcOptions)(sqlContext.sparkSession)
+    null
   }
 
+  /**
+    * 对JDBC逻辑操作
+    *
+    * @param sqlContext
+    * @param mode
+    * @param parameters
+    * @param df
+    * @return
+    */
   override def createRelation(
                                sqlContext: SQLContext,
                                mode: SaveMode,
                                parameters: Map[String, String],
                                df: DataFrame): BaseRelation = {
     val options = new JDBCOptions(parameters)
-    val isCaseSensitive = sqlContext.conf.caseSensitiveAnalysis
+    val isCaseSensitive = true //sqlContext.conf.caseSensitiveAnalysis
 
     val conn = JdbcUtils.createConnectionFactory(options)()
     try {

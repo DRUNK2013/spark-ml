@@ -3,29 +3,32 @@ package com.drunk2013.spark.sql
 
 import java.sql.{Connection, Driver, DriverManager, PreparedStatement, ResultSet, ResultSetMetaData, SQLException}
 
+import com.drunk2013.spark.util.Logging
+
 import scala.collection.JavaConverters._
 import scala.util.Try
 import scala.util.control.NonFatal
 import org.apache.spark.TaskContext
 import org.apache.spark.executor.InputMetrics
-import org.apache.spark.sql.{AnalysisException, DataFrame, Row}
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
-import org.apache.spark.sql.catalyst.expressions.SpecificInternalRow
 import org.apache.spark.sql.catalyst.util.{DateTimeUtils, GenericArrayData}
-import org.apache.spark.sql.execution.datasources.jdbc.{DriverRegistry, DriverWrapper, JDBCOptions}
+import org.apache.spark.sql.execution.datasources.jdbc.{DriverWrapper}
 import org.apache.spark.sql.jdbc.{JdbcDialect, JdbcDialects, JdbcType}
 import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
-import org.apache.spark.util.NextIterator
 
-import org.apache.spark.internal.Logging
+
 /**
   * Created by shuangfu on 17-2-3.
   * Author : DRUNK
   * email :len1988.zhang@gmail.com
   */
-object JdbcUtils extends Logging{
+/**
+  * 封装JDBC,对表数据进行写操作,使用原生对Java JDBC包连接,分区批量写入.
+  */
+object JdbcUtils extends Logging {
   /**
     * Returns a factory for creating connections to the given JDBC URL.
     *
@@ -170,47 +173,55 @@ object JdbcUtils extends Logging{
                                signed: Boolean): DataType = {
     val answer = sqlType match {
       // scalastyle:off
-      case java.sql.Types.ARRAY         => null
-      case java.sql.Types.BIGINT        => if (signed) { LongType } else { DecimalType(20,0) }
-      case java.sql.Types.BINARY        => BinaryType
-      case java.sql.Types.BIT           => BooleanType // @see JdbcDialect for quirks
-      case java.sql.Types.BLOB          => BinaryType
-      case java.sql.Types.BOOLEAN       => BooleanType
-      case java.sql.Types.CHAR          => StringType
-      case java.sql.Types.CLOB          => StringType
-      case java.sql.Types.DATALINK      => null
-      case java.sql.Types.DATE          => DateType
-      case java.sql.Types.DECIMAL
-        if precision != 0 || scale != 0 => DecimalType.bounded(precision, scale)
-      case java.sql.Types.DECIMAL       => DecimalType.SYSTEM_DEFAULT
-      case java.sql.Types.DISTINCT      => null
-      case java.sql.Types.DOUBLE        => DoubleType
-      case java.sql.Types.FLOAT         => FloatType
-      case java.sql.Types.INTEGER       => if (signed) { IntegerType } else { LongType }
-      case java.sql.Types.JAVA_OBJECT   => null
-      case java.sql.Types.LONGNVARCHAR  => StringType
+      case java.sql.Types.ARRAY => null
+      case java.sql.Types.BIGINT => if (signed) {
+        LongType
+      } else {
+        DecimalType(20, 0)
+      }
+      case java.sql.Types.BINARY => BinaryType
+      case java.sql.Types.BIT => BooleanType // @see JdbcDialect for quirks
+      case java.sql.Types.BLOB => BinaryType
+      case java.sql.Types.BOOLEAN => BooleanType
+      case java.sql.Types.CHAR => StringType
+      case java.sql.Types.CLOB => StringType
+      case java.sql.Types.DATALINK => null
+      case java.sql.Types.DATE => DateType
+      //      case java.sql.Types.DECIMAL
+      //        if precision != 0 || scale != 0 => DecimalType.bounded(precision, scale)
+      case java.sql.Types.DECIMAL => DecimalType.SYSTEM_DEFAULT
+      case java.sql.Types.DISTINCT => null
+      case java.sql.Types.DOUBLE => DoubleType
+      case java.sql.Types.FLOAT => FloatType
+      case java.sql.Types.INTEGER => if (signed) {
+        IntegerType
+      } else {
+        LongType
+      }
+      case java.sql.Types.JAVA_OBJECT => null
+      case java.sql.Types.LONGNVARCHAR => StringType
       case java.sql.Types.LONGVARBINARY => BinaryType
-      case java.sql.Types.LONGVARCHAR   => StringType
-      case java.sql.Types.NCHAR         => StringType
-      case java.sql.Types.NCLOB         => StringType
-      case java.sql.Types.NULL          => null
-      case java.sql.Types.NUMERIC
-        if precision != 0 || scale != 0 => DecimalType.bounded(precision, scale)
-      case java.sql.Types.NUMERIC       => DecimalType.SYSTEM_DEFAULT
-      case java.sql.Types.NVARCHAR      => StringType
-      case java.sql.Types.OTHER         => null
-      case java.sql.Types.REAL          => DoubleType
-      case java.sql.Types.REF           => StringType
-      case java.sql.Types.ROWID         => LongType
-      case java.sql.Types.SMALLINT      => IntegerType
-      case java.sql.Types.SQLXML        => StringType
-      case java.sql.Types.STRUCT        => StringType
-      case java.sql.Types.TIME          => TimestampType
-      case java.sql.Types.TIMESTAMP     => TimestampType
-      case java.sql.Types.TINYINT       => IntegerType
-      case java.sql.Types.VARBINARY     => BinaryType
-      case java.sql.Types.VARCHAR       => StringType
-      case _                            => null
+      case java.sql.Types.LONGVARCHAR => StringType
+      case java.sql.Types.NCHAR => StringType
+      case java.sql.Types.NCLOB => StringType
+      case java.sql.Types.NULL => null
+      //      case java.sql.Types.NUMERIC
+      //        if precision != 0 || scale != 0 => DecimalType.bounded(precision, scale)
+      case java.sql.Types.NUMERIC => DecimalType.SYSTEM_DEFAULT
+      case java.sql.Types.NVARCHAR => StringType
+      case java.sql.Types.OTHER => null
+      case java.sql.Types.REAL => DoubleType
+      case java.sql.Types.REF => StringType
+      case java.sql.Types.ROWID => LongType
+      case java.sql.Types.SMALLINT => IntegerType
+      case java.sql.Types.SQLXML => StringType
+      case java.sql.Types.STRUCT => StringType
+      case java.sql.Types.TIME => TimestampType
+      case java.sql.Types.TIMESTAMP => TimestampType
+      case java.sql.Types.TINYINT => IntegerType
+      case java.sql.Types.VARBINARY => BinaryType
+      case java.sql.Types.VARCHAR => StringType
+      case _ => null
       // scalastyle:on
     }
 
@@ -282,17 +293,19 @@ object JdbcUtils extends Logging{
     * Convert a [[ResultSet]] into an iterator of Catalyst Rows.
     */
   def resultSetToRows(resultSet: ResultSet, schema: StructType): Iterator[Row] = {
-    val inputMetrics =
-      Option(TaskContext.get()).map(_.taskMetrics().inputMetrics).getOrElse(new InputMetrics)
+    //    val inputMetrics = Option(_.map(_))
+    //      Option(TaskContext.get()).map(_.taskMetrics().inputMetrics).getOrElse(new InputMetrics)
     val encoder = RowEncoder(schema).resolveAndBind()
-    val internalRows = resultSetToSparkInternalRows(resultSet, schema, inputMetrics)
-    internalRows.map(encoder.fromRow)
+    //    val internalRows = resultSetToSparkInternalRows(resultSet, schema, inputMetrics)
+    //    internalRows.map(encoder.fromRow)
+    null
   }
 
   private[spark] def resultSetToSparkInternalRows(
                                                    resultSet: ResultSet,
                                                    schema: StructType,
                                                    inputMetrics: InputMetrics): Iterator[InternalRow] = {
+    /*
     new NextIterator[InternalRow] {
       private[this] val rs = resultSet
       private[this] val getters: Array[JDBCValueGetter] = makeGetters(schema)
@@ -322,6 +335,8 @@ object JdbcUtils extends Logging{
         }
       }
     }
+    */
+    null
   }
 
   // A `JDBCValueGetter` is responsible for getting a value from `ResultSet` into a field
@@ -359,11 +374,13 @@ object JdbcUtils extends Logging{
     // DecimalType(12, 2). Thus, after saving the dataframe into parquet file and then
     // retrieve it, you will get wrong result 199.99.
     // So it is needed to set precision and scale for Decimal based on JDBC metadata.
-    case DecimalType.Fixed(p, s) =>
-      (rs: ResultSet, row: InternalRow, pos: Int) =>
-        val decimal =
-          nullSafeConvert[java.math.BigDecimal](rs.getBigDecimal(pos + 1), d => Decimal(d, p, s))
-        row.update(pos, decimal)
+    /*
+      case DecimalType.Fixed(p, s) =>
+        (rs: ResultSet, row: InternalRow, pos: Int) =>
+          val decimal =
+            nullSafeConvert[java.math.BigDecimal](rs.getBigDecimal(pos + 1), d => Decimal(d, p, s))
+          row.update(pos, decimal)
+  */
 
     case DoubleType =>
       (rs: ResultSet, row: InternalRow, pos: Int) =>
@@ -553,6 +570,7 @@ object JdbcUtils extends Logging{
     * implementation changes elsewhere might easily render such a closure
     * non-Serializable.  Instead, we explicitly close over all variables that
     * are used.
+    * 把分区数据写入到数据库中
     */
   def savePartition(
                      getConnection: () => Connection,
@@ -575,7 +593,7 @@ object JdbcUtils extends Logging{
           // has been chosen and transactions are supported
           val defaultIsolation = metadata.getDefaultTransactionIsolation
           finalIsolationLevel = defaultIsolation
-          if (metadata.supportsTransactionIsolationLevel(isolationLevel))  {
+          if (metadata.supportsTransactionIsolationLevel(isolationLevel)) {
             // Finally update to actually requested level if possible
             finalIsolationLevel = isolationLevel
           } else {
@@ -680,6 +698,7 @@ object JdbcUtils extends Logging{
 
   /**
     * Saves the RDD to the database in a single transaction.
+    * 把DataFrame数据写入到数据库中
     */
   def saveTable(
                  df: DataFrame,
@@ -695,14 +714,17 @@ object JdbcUtils extends Logging{
     val isolationLevel = options.isolationLevel
 
     val insertStmt = getInsertStatement(table, rddSchema, tableSchema, isCaseSensitive, dialect)
+    //对dataFrame进行分区
     val repartitionedDF = options.numPartitions match {
-      case Some(n) if n <= 0 => throw new IllegalArgumentException(
-        s"Invalid value `$n` for parameter `${JDBCOptions.JDBC_NUM_PARTITIONS}` in table writing " +
-          "via JDBC. The minimum value is 1.")
-      case Some(n) if n < df.rdd.getNumPartitions => df.coalesce(n)
+      /*
+    case Some(n) if n <= 0 => throw new IllegalArgumentException(
+      s"Invalid value `$n` for parameter `${JDBCOptions.JDBC_NUM_PARTITIONS}` in table writing " +
+        "via JDBC. The minimum value is 1.")
+    case Some(n) if n < df.rdd.getNumPartitions => df.coalesce(n) //若设置对分区大DataFrame的分区大小,则重新进行分区.
+    */
       case _ => df
     }
-    repartitionedDF.foreachPartition(iterator => savePartition(
+    repartitionedDF.foreachPartition(iterator => savePartition(//分区进行写入到数据库中
       getConnection, table, iterator, rddSchema, insertStmt, batchSize, dialect, isolationLevel)
     )
   }

@@ -23,7 +23,7 @@ class DataFrameWriterTest extends SharedSQLContext {
     properties.setProperty("rowId", "false")
     properties.setProperty("drive", "com.mysql.jdbc.Driver")
     //    Utils.classForName("org.h2.Driver")
-    Class.forName("com.mysql.jdbc.Driver")
+//    Class.forName("com.mysql.jdbc.Driver")
 
     val arr3x2 = Array[Row](Row.apply("zsf", 88), Row.apply("jy", 93), Row.apply("wzm", 77))
     val schema2 = StructType(
@@ -33,7 +33,7 @@ class DataFrameWriterTest extends SharedSQLContext {
     val df = spark.createDataFrame(sparkContext.parallelize(arr3x2), schema2)
 
     df.show(100)
-    df.write.jdbc(url, "student", properties)
+    //    df.write.jdbc(url, "student", properties)
     //    assert(2 === spark.read.jdbc(url, "TEST.BASICCREATETEST", new Properties()).collect()(0).length)
   }
 
