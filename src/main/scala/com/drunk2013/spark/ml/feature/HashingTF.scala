@@ -63,8 +63,8 @@ class HashingTF(override val uid: String) extends Transformer with HasInputCol w
   override def transform(dataset: Dataset[_]): DataFrame = {
     dataset.printSchema()
     val outputSchema = transformSchema(dataset.schema)
-    val hashingTF = new HashingTFLIB($(numFeatures)).setBinary($(binary))
-    // TODO: Make the hashingTF.transform natively in ml framework to avoid extra conversion.
+    //
+    val hashingTF = new HashingTFLIB($(numFeatures)).setBinary($(binary)) //计算词频,并传递是否是二分模式(词频为:0或1)
     val t = udf { terms: Seq[_] => hashingTF.transform(terms).asML }
     val metadata = outputSchema($(outputCol)).metadata
     dataset.select(col("*"), t(col($(inputCol))).as($(outputCol), metadata))

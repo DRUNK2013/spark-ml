@@ -1,7 +1,7 @@
 package com.drunk2013.spark.ml.feature
 
 import com.drunk2013.spark.InfoHelp
-import org.apache.spark.ml.feature.{IDF, Tokenizer}
+import org.apache.spark.ml.feature.{Tokenizer}
 import org.apache.spark.sql.SparkSession
 
 /**

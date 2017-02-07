@@ -2,7 +2,6 @@ package com.drunk2013.spark.sql
 
 import java.util.Properties
 
-import org.apache.spark.util.Utils
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.test.SharedSQLContext
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
@@ -31,6 +30,7 @@ class DataFrameWriterTest extends SharedSQLContext {
         StructField("score", IntegerType) :: Nil)
 
     val df = spark.createDataFrame(sparkContext.parallelize(arr3x2), schema2)
+
 
     df.show(100)
     //    df.write.jdbc(url, "student", properties)
