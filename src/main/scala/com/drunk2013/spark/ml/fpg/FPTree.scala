@@ -67,6 +67,11 @@ private[fpg] class FPTree[T] extends Serializable {
   }
 
   /** Gets a subtree with the suffix. */
+  /**
+    * 根据末节点值,向上搜索,抽取其子树
+    * @param suffix
+    * @return
+    */
   def project(suffix: T): FPTree[T] = {
     val tree = new FPTree[T]
     if (summaries.contains(suffix)) {
@@ -96,6 +101,7 @@ private[fpg] class FPTree[T] extends Serializable {
     */
   private def getTransactions(node: Node[T]): Iterator[(List[T], Long)] = {
     var count = node.count
+
     println(s"all count:${count}")
     node.children.iterator.flatMap { case (item, child) =>
       println(s"item:${item},child:${child.toString}")
