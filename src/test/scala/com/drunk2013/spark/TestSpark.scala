@@ -1,4 +1,4 @@
-package com.drunk2013.spark.ml.fpg
+package com.drunk2013.spark
 
 import org.apache.spark.{SparkConf, SparkContext}
 

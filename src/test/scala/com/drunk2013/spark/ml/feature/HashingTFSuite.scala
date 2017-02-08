@@ -14,7 +14,7 @@ import org.apache.spark.ml.linalg.{Vector, Vectors}
   * Author : DRUNK
   * email :len1988.zhang@gmail.com
   */
-class HashingTFTest extends SparkFunSuite with MLlibTestSparkContext with DefaultReadWriteTest {
+class HashingTFSuite extends SparkFunSuite with MLlibTestSparkContext with DefaultReadWriteTest {
 
   import testImplicits._
 

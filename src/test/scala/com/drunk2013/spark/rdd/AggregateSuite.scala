@@ -1,6 +1,6 @@
 package com.drunk2013.spark.rdd
 
-import org.apache.spark.{SparkConf, SparkContext, SparkFunSuite}
+import org.apache.spark.{SharedSparkContext, SparkConf, SparkContext, SparkFunSuite}
 
 import scala.collection.mutable
 
@@ -9,30 +9,9 @@ import scala.collection.mutable
   * Author : DRUNK
   * email :len1988.zhang@gmail.com
   */
-object TreeAggregate {
-  def seq(a: Int, b: Int): Int = {
-    println("seq=a:" + a + ",b:" + b)
-    math.max(a, b)
-  }
+class Aggregate extends SparkFunSuite with SharedSparkContext with Serializable {
 
-  def comb(a: Int, b: Int): Int = {
-    println("comb=a:" + a + ",b:" + b)
-    a + b
-  }
-
-  def main(args: Array[String]): Unit = {
-
-    val conf = new SparkConf().setAppName("spark_ml_src")
-      .setMaster("local[*]")
-    val sc = new SparkContext(conf)
-    val data = sc.parallelize(List(1, 2, 3, 4, 5, 8, 9), 2)
-    println("====================aggregate=======================")
-    val resultAggregate = data.aggregate(0)(seq, comb)
-    println(resultAggregate)
-
-    println("==================treeAggregate====================")
-    val resultTreeAggregate = data.treeAggregate(0)(seq, comb)
-    println(resultTreeAggregate)
+  test("aggregate 分区聚合测试") {
 
     /**
       * Aggregate the elements of each partition, and then the results for all the partitions,
@@ -94,7 +73,8 @@ object TreeAggregate {
       ), 2)
     println("partition size:" + scoreRDD.partitions.size)
     val studentAggregator = new StudentAggregator
-    val scoreResult = scoreRDD.aggregate(studentAggregator)(
+    //    val scoreResult = scoreRDD.aggregate(studentAggregator)(
+    val scoreResult = scoreRDD.treeAggregate(studentAggregator)(
       (sa, v) => (sa.add(new Student(v._1, v._3))),
       (sa1, sa2) => (sa1.merge(sa2))
     )
@@ -102,14 +82,22 @@ object TreeAggregate {
 
     })
     scoreResult.listScore().foreach(println(_))
-  }
 
+    val expected = mutable.HashMap("zsf" -> 240, "wzm" -> 220, "jy" -> 260)
+
+    assert(expected == scoreResult.listScore())
+
+  }
 }
 
+//实体对象
 case class Student(name: String, score: Int)
 
+/**
+  * aggregate 聚合类和方法
+  */
 class StudentAggregator() extends Serializable {
-  private var nameScore: mutable.HashMap[String, Int] = new mutable.HashMap[String, Int]
+  private var nameScore = new mutable.HashMap[String, Int]
 
   /**
     * 添加学生或更新成绩
@@ -143,3 +131,4 @@ class StudentAggregator() extends Serializable {
   }
 
 }
+

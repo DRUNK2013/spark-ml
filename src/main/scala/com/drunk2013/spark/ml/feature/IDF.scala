@@ -4,7 +4,7 @@ import com.drunk2013.spark.util.SchemaUtils
 import org.apache.spark.ml.{Estimator, Model}
 import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators, Params}
 import org.apache.spark.ml.util._
-import org.apache.spark.mllib.linalg.VectorUDT
+import org.apache.spark.ml.linalg.VectorUDT
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
 import org.apache.spark.sql.types.StructType
@@ -28,11 +28,6 @@ private[feature] trait IDFBase extends Params with HasInputCol with HasOutputCol
   setDefault(minDocFreq -> 0)
 
   def getMinDocFreq: Int = $(minDocFreq)
-
-  protected def validateAndTransformSchema(schema: StructType): StructType = {
-    SchemaUtils.checkColumnType(schema, $(inputCol), new VectorUDT)
-    SchemaUtils.appendColumn(schema, $(inputCol), new VectorUDT)
-  }
 }
 
 final class IDF(override val uid: String) extends Estimator[IDFModel] with IDFBase with DefaultParamsWritable {
@@ -56,7 +51,8 @@ final class IDF(override val uid: String) extends Estimator[IDFModel] with IDFBa
   }
 
   override def transformSchema(schema: StructType): StructType = {
-    validateAndTransformSchema(schema)
+    //    validateAndTransformSchema(schema)
+    null
   }
 
   override def copy(extra: ParamMap): IDF = defaultCopy(extra)
@@ -77,7 +73,8 @@ class IDFModel private[ml](override val uid: String, idfModel: IDFModelLIB) exte
   }
 
   override def transformSchema(schema: StructType): StructType = {
-    validateAndTransformSchema(schema)
+    //      validateAndTransformSchema(schema)
+    null
   }
 
   override def copy(extra: ParamMap): IDFModel = {

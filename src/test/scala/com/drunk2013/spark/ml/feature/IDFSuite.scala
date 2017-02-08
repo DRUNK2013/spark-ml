@@ -40,13 +40,13 @@ object IDFSuite {
     InfoHelp.show("featurizedData", featurizedData)
     // alternatively, Count Vectorizer can also be used to get term frequency vectors
 
-//    val idf = new IDF()
-//      .setInputCol("rawFeatures")
-//      .setOutputCol("features")
-//    val idfModel = idf.fit(featurizedData)
-//
-//    val rescaledData = idfModel.transform(featurizedData)
-//    InfoHelp.show("rescaledData", rescaledData)
+    val idf = new IDF()
+      .setInputCol("rawFeatures")
+      .setOutputCol("features")
+    val idfModel = idf.fit(featurizedData)
+
+    val rescaledData = idfModel.transform(featurizedData)
+    InfoHelp.show("rescaledData", rescaledData)
 
   }
 
