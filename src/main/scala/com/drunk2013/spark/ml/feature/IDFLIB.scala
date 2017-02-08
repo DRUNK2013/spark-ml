@@ -28,6 +28,7 @@ class IDFLIB(val minDocFreq: Int) {
   /**
     * 计算IDF向量
     * 逐层聚合
+    *
     * @param dataset
     * @return
     */
