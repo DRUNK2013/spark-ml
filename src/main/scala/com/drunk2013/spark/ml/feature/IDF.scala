@@ -1,10 +1,8 @@
 package com.drunk2013.spark.ml.feature
 
-import com.drunk2013.spark.util.SchemaUtils
 import org.apache.spark.ml.{Estimator, Model}
 import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators, Params}
 import org.apache.spark.ml.util._
-import org.apache.spark.ml.linalg.VectorUDT
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
 import org.apache.spark.sql.types.StructType
@@ -19,6 +17,9 @@ import org.apache.spark.rdd.RDD
   * email :len1988.zhang@gmail.com
   */
 
+/**
+  * IDF数据逻辑处理
+  */
 private[feature] trait IDFBase extends Params with HasInputCol with HasOutputCol {
 
   final val minDocFreq = new IntParam(this,
@@ -40,14 +41,22 @@ final class IDF(override val uid: String) extends Estimator[IDFModel] with IDFBa
 
   def setMinDocFreq(value: Int): this.type = set(minDocFreq, value)
 
+  /**
+    * TF-IDF 计算
+    *
+    * @param dataset
+    * @return
+    */
   override def fit(dataset: Dataset[_]): IDFModel = {
     transformSchema(dataset.schema, logging = true)
+    dataset.show(100)
     val input: RDD[OldVector] = dataset.select($(inputCol)).rdd.map {
-      case Row(v: Vector) => OldVectors.fromML(v)
+      case Row(v: Vector) => OldVectors.fromML(v) //mllib中vector 转换成 ml vector类型
     }
-
-    val idf = new IDFLIB($(minDocFreq)).fit(input)
-    copyValues(new IDFModel(uid, idf).setParent(this))
+    input.collect().foreach(println(_))
+    val idfModelLib = new IDFLIB($(minDocFreq)).fit(input) //对所有input 数据计算出IDFLIB实例
+    //    new IDFModel(uid = uid, idfModel = idfModelLib)
+    copyValues(new IDFModel(uid = uid, idfModel = idfModelLib).setParent(this))
   }
 
   override def transformSchema(schema: StructType): StructType = {
@@ -68,6 +77,7 @@ class IDFModel private[ml](override val uid: String, idfModel: IDFModelLIB) exte
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     transformSchema(dataset.schema, logging = true)
+    // dataframe 自定义函数,计算tf-idf
     val idf = udf { vec: Vector => idfModel.transform(OldVectors.fromML(vec)).asML }
     dataset.withColumn($(outputCol), idf(col($(inputCol))))
   }

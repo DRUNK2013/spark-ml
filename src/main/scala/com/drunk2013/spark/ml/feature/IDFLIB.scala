@@ -26,6 +26,7 @@ class IDFLIB(val minDocFreq: Int) {
   def this() = this(0)
 
   /**
+    * 对给定的RDD输入数据集,计算其IDFModel模型对象
     * 计算IDF向量
     * 逐层聚合
     *
@@ -115,7 +116,7 @@ private object IDFLIB {
         if (null == df) {
           df = other.df.copy
         } else {
-          df += this.df
+          df += other.df
         }
       }
       this

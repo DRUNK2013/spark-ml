@@ -1,6 +1,7 @@
 package com.drunk2013.spark
 
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.mllib.linalg.Vector
 
 /**
   * Created by shuangfu on 17-2-7.
@@ -17,6 +18,12 @@ object InfoHelp {
         df.printSchema()
         println("3.数据样例:")
         df.take(50).foreach(println(_))
+      }
+      case array: Array[AnyVal] => {
+        array.foreach(println(_))
+      }
+      case vector: Vector => {
+        vector.toArray.foreach(println(_))
       }
 
       case _ => println(obj)

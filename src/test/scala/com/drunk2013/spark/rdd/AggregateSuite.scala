@@ -1,6 +1,6 @@
 package com.drunk2013.spark.rdd
 
-import org.apache.spark.{SharedSparkContext, SparkConf, SparkContext, SparkFunSuite}
+import org.apache.spark.{SharedSparkContext, SparkFunSuite}
 
 import scala.collection.mutable
 
@@ -8,6 +8,12 @@ import scala.collection.mutable
   * Created by shuangfu on 17-2-7.
   * Author : DRUNK
   * email :len1988.zhang@gmail.com
+  */
+/**
+  * aggregate 和 treeAggregate是个聚合函数,可以在每个partition中,进行聚合,聚合后,再进行总体的聚合.
+  * 主要通过zero value初始类型,一般为空值.
+  * seqOp 聚合累积函数
+  * combOp 对聚合后对数据集,进行再次聚合
   */
 class Aggregate extends SparkFunSuite with SharedSparkContext with Serializable {
 
@@ -75,12 +81,10 @@ class Aggregate extends SparkFunSuite with SharedSparkContext with Serializable 
     val studentAggregator = new StudentAggregator
     //    val scoreResult = scoreRDD.aggregate(studentAggregator)(
     val scoreResult = scoreRDD.treeAggregate(studentAggregator)(
-      (sa, v) => (sa.add(new Student(v._1, v._3))),
-      (sa1, sa2) => (sa1.merge(sa2))
+      seqOp = (sa, v) => (sa.add(new Student(v._1, v._3))),
+      combOp = (sa1, sa2) => (sa1.merge(sa2))
     )
-    scoreRDD.foreachPartition(iter => {
 
-    })
     scoreResult.listScore().foreach(println(_))
 
     val expected = mutable.HashMap("zsf" -> 240, "wzm" -> 220, "jy" -> 260)
