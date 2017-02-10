@@ -1,9 +1,7 @@
 package com.drunk2013.spark.ml.feature
 
 import com.drunk2013.spark.util.{HasMaxIter, HasSeed, HasStepSize}
-import org.apache.spark.ml.{Model}
 import org.apache.spark.ml.param.{IntParam, ParamValidators, Params}
-import org.apache.spark.ml.util.MLWritable
 
 
 /**
@@ -96,8 +94,8 @@ private[feature] trait Word2VectorBase extends Params with HasInputCol with HasO
 
 }
 
-final class Word2VectorModel private[ml](
-                                          override val uid:String,
-                                          private val word2VectorModelLIB )
-  extends Model[Word2VectorModel] with Word2VectorBase with MLWritable {
-}
+//final class Word2VectorModel private[ml](
+//                                          override val uid:String,
+//                                          private val word2VectorModelLIB )
+//  extends Model[Word2VectorModel] with Word2VectorBase with MLWritable {
+//}

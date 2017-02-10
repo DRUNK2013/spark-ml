@@ -16,7 +16,7 @@ import scala.reflect.ClassTag
   *   build/sbt "mllib/runMain org.apache.spark.ml.param.shared.SharedParamsCodeGen"
   * }}}
   */
-private[shared] object SharedParamsCodeGen {
+private object SharedParamsCodeGen {
 
   def main(args: Array[String]): Unit = {
     val params = Seq(
