@@ -158,6 +158,7 @@
     <orderEntry type="library" name="Maven: org.apache.parquet:parquet-hadoop:1.8.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.parquet:parquet-format:2.3.0-incubating" level="project" />
     <orderEntry type="library" name="Maven: org.apache.parquet:parquet-jackson:1.8.1" level="project" />
+    <orderEntry type="library" name="Maven: com.drunk2013.spark:spark-mllib-local_2.11:2.1.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.apache.spark:spark-core_2.11:test-jar:tests:2.1.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.apache.spark:spark-mllib_2.11:test-jar:tests:2.1.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.apache.spark:spark-sql_2.11:test-jar:tests:2.1.0" level="project" />

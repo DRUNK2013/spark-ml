@@ -42,11 +42,13 @@ class AssociationRules private[fpg](
   def run[Item: ClassTag](freqItemsets: RDD[FreqItemset[Item]]): RDD[Rule[Item]] = {
     //println(s"partitions count:${freqItemsets.getNumPartitions}")
     // For candidate rule X => Y, generate (X, (Y, freq(X union Y)))
-    val candicates = freqItemsets.flatMap { itemset =>
+    //把数据分裂出[前项,后项,频次]候选集.
+    val candidates = freqItemsets.flatMap { itemset =>
       val items = itemset.items
-      items.flatMap { item =>
-        //        println(s"item:${item}")
-        //        println(s"items:${items.mkString("[", ",", "]")}")
+      println("/***************************start a flatMap**********************************/")
+      val result = items.flatMap { item =>
+        println(s"items:${items.mkString("[", ",", "]")}")
+        println(s"item:${item}")
         //        println(s"item.partition:${items.partition(_ == item)._1.mkString(",")}")
         //        println(s"item.partition:${items.partition(_ == item)._2.mkString(",")}")
 
@@ -58,16 +60,20 @@ class AssociationRules private[fpg](
           case _ => None
         }
       }
+      println("/*---------------------end a flatMap-------------------------------------*\n\n/")
+      result
     }
-    //    candicates.collect.foreach(println) //查看数据结构
-    // Join to get (X, ((Y, freq(X union Y)), freq(X))), generate rules, and filter by confidence
-    //关联,生成关联规则
-    val result = candicates.join(freqItemsets.map(x => (x.items.toSeq, x.freq)))
+    println("==============================candicates===============================")
+    candidates.collect().foreach(println)
+    //candicates.collect.foreach(println) //查看数据结构
+    //Join to get (X, ((Y, freq(X union Y)), freq(X))), generate rules, and filter by confidence
+    //关联,生成关联规则.候选集和输入数据集,进行笛卡尔集,并计算其置信度.通过置信度过滤
+    val result = candidates.join(freqItemsets.map(x => (x.items.toSeq, x.freq)))
       .map { case (anticedent, ((consequent, freqUnion), freqAnticedent)) =>
         new Rule(anticedent.toArray, consequent.toArray, freqUnion, freqAnticedent)
       }.filter(_.confidence >= minConfidence)
 
-    //    result.collect.foreach(println)
+    //result.collect.foreach(println)
     result
   }
 }

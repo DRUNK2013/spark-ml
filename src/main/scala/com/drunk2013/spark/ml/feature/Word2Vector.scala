@@ -1,8 +1,13 @@
 package com.drunk2013.spark.ml.feature
 
 import com.drunk2013.spark.util.{HasMaxIter, HasSeed, HasStepSize}
-import org.apache.spark.ml.param.{IntParam, ParamValidators, Params}
-
+import org.apache.spark.ml.Model
+import org.apache.spark.ml.linalg.{ BLAS2, Vectors}
+import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators, Params}
+import org.apache.spark.ml.util.{Identifiable }
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.functions._
 
 /**
   * Created by shuangfu on 17-2-9.
@@ -92,10 +97,105 @@ private[feature] trait Word2VectorBase extends Params with HasInputCol with HasO
   setDefault(stepSize -> 0.025)
   setDefault(maxIter -> 1)
 
+  protected def validateAndTransformSchema(schema: StructType): StructType = {
+    // val typeCandidates = List(new ArrayType(StringType, true), new ArrayType(StringType, false))
+    // SchemaUtils.checkColumnTypes(schema, $(inputCol), typeCandidates)
+    // SchemaUtils.appendColumn(schema, $(outputCol), new VectorUDT)
+    null
+  }
 }
 
-//final class Word2VectorModel private[ml](
-//                                          override val uid:String,
-//                                          private val word2VectorModelLIB )
-//  extends Model[Word2VectorModel] with Word2VectorBase with MLWritable {
-//}
+final class Word2Vector private[ml](
+                                     override val uid: String,
+                                     private val word2VectorModelLIB)
+  extends Model[Word2VectorModel] with Word2VectorBase {
+
+  def this() = this(Identifiable.randomUID("w2v"))
+
+  def setInputCol(value: String): this.type = set(inputCol, value)
+
+  def setOutputCol(value: String): this.type = set(outputCol, value)
+
+  def setVectorSize(value: Int): this.type = set(vectorSize, value)
+
+  def setWindowSize(value: Int): this.type = set(windowSize, value)
+
+  def setStepSize(value: Int): this.type = set(stepSize, value)
+
+  def setNumPartitions(value: Int): this.type = set(numPartitions, value)
+
+  def setMaxIter(value: Int): this.type = set(maxIter, value)
+
+  def setSeed(value: Int): this.type = set(seed, value)
+
+  def setMinCount(value: Int): this.type = set(minCount, value)
+
+  def setMaxSentenceLength(value: Int): this.type = set(maxSentenceLength, value)
+
+
+}
+
+class Word2VectorModel private[feature](
+                                         override val uid: String,
+                                         private val wordVectors: Word2VectorModelLIB
+                                       )
+  extends Model[Word2VectorModel] with Word2VectorBase {
+
+  @transient lazy val getVectors: DataFrame = {
+    val spark = SparkSession.builder().getOrCreate()
+    val wordVec = wordVectors.getVectors.mapValues(vec => Vectors.dense(vec.map(_.toDouble)))
+    spark.createDataFrame(wordVec.toSeq).toDF("word", "vector")
+  }
+
+  def findSynonyms(word: String, num: Int): DataFrame = {
+    val spark = SparkSession.builder().getOrCreate()
+    spark.createDataFrame(wordVectors.findSynonyms(word, num)).toDF("word", "similarity")
+  }
+
+  //  def findSynonyms(vector: Vector, num: Int): DataFrame = {
+  //    val spark = SparkSession.builder().getOrCreate()
+  //    spark.createDataFrame(wordVectors.findSynonyms(vectorL,num)).toDF()
+  //
+  //  }
+
+  def setInputCol(value: String): this.type = set(inputCol, value)
+
+  def setOutputCol(value: String): this.type = set(outputCol, value)
+
+  override def transform(dataset: Dataset[_]): DataFrame = {
+    val vectors = wordVectors.getVectors
+      .mapValues(vv => Vectors.dense(vv.map(_.toDouble)))
+      .map(identity)
+    val bVectors = dataset.sparkSession.sparkContext.broadcast(vectors)
+    val d = $(vectorSize)
+
+    val word2Vector = udf { sentence: Seq[String] =>
+      if (sentence.isEmpty) {
+        Vectors.sparse(d, Array.empty[Int], Array.empty[Double])
+      } else {
+        val sum = Vectors.zeros(d)
+        sentence.foreach { word =>
+          bVectors.value.get(word).foreach { v =>
+                        BLAS2.axpy(1.0, v, sum)
+          }
+        }
+
+      }
+
+    }
+    null
+  }
+
+  override def transformSchema(schema: StructType): StructType = {
+    validateAndTransformSchema(schema)
+  }
+
+  override def copy(extra: ParamMap): Word2VectorModel = {
+    val copied = new Word2VectorModel(uid, wordVectors)
+    copyValues(copied, extra).setParent(parent)
+  }
+}
+
+object Word2VectorModel {
+
+}

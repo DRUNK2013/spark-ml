@@ -33,6 +33,11 @@
             <artifactId>spark-sql_${scala.main.verison}</artifactId>
             <version>${spark.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.drunk2013.spark</groupId>
+            <artifactId>spark-mllib-local_${scala.main.verison}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
 
 
         <dependency>

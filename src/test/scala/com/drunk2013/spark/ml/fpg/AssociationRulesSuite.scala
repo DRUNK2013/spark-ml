@@ -1,5 +1,6 @@
 package com.drunk2013.spark.ml.fpg
 
+import com.drunk2013.spark.InfoHelp
 import org.apache.spark.SparkFunSuite
 import org.apache.spark.mllib.util.MLlibTestSparkContext
 
@@ -20,13 +21,14 @@ class AssociationRulesSuite extends SparkFunSuite with MLlibTestSparkContext {
       case (items, freq) => new FPGrowth.FreqItemset(items.toArray, freq)
     })
 
+    InfoHelp.show("关联规则测试集", freqItemsets)
     val ar = new AssociationRules()
 
     val results1 = ar
       .setMinConfidence(0.9)
       .run(freqItemsets)
       .collect()
-    println(s"结果集(confidence:0.9):")
+    InfoHelp.show("结果集(confidence:0.9):", results1)
     results1.foreach(println)
 
     /* Verify results using the `R` code:
@@ -57,8 +59,7 @@ class AssociationRulesSuite extends SparkFunSuite with MLlibTestSparkContext {
       .setMinConfidence(0)
       .run(freqItemsets)
       .collect()
-    println(s"结果集(confidence:0.9):")
-    results2.foreach(println)
+    InfoHelp.show("结果集(confidence:0):", results2)
 
     /* Verify results using the `R` code:
        ars = apriori(transactions,
