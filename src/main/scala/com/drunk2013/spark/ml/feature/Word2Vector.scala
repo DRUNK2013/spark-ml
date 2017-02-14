@@ -2,9 +2,9 @@ package com.drunk2013.spark.ml.feature
 
 import com.drunk2013.spark.util.{HasMaxIter, HasSeed, HasStepSize}
 import org.apache.spark.ml.Model
-import org.apache.spark.ml.linalg.{ BLAS2, Vectors}
+import org.apache.spark.ml.linalg.{BLAS2, Vectors}
 import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators, Params}
-import org.apache.spark.ml.util.{Identifiable }
+import org.apache.spark.ml.util.{Identifiable}
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions._
@@ -105,35 +105,35 @@ private[feature] trait Word2VectorBase extends Params with HasInputCol with HasO
   }
 }
 
-final class Word2Vector private[ml](
-                                     override val uid: String,
-                                     private val word2VectorModelLIB)
-  extends Model[Word2VectorModel] with Word2VectorBase {
-
-  def this() = this(Identifiable.randomUID("w2v"))
-
-  def setInputCol(value: String): this.type = set(inputCol, value)
-
-  def setOutputCol(value: String): this.type = set(outputCol, value)
-
-  def setVectorSize(value: Int): this.type = set(vectorSize, value)
-
-  def setWindowSize(value: Int): this.type = set(windowSize, value)
-
-  def setStepSize(value: Int): this.type = set(stepSize, value)
-
-  def setNumPartitions(value: Int): this.type = set(numPartitions, value)
-
-  def setMaxIter(value: Int): this.type = set(maxIter, value)
-
-  def setSeed(value: Int): this.type = set(seed, value)
-
-  def setMinCount(value: Int): this.type = set(minCount, value)
-
-  def setMaxSentenceLength(value: Int): this.type = set(maxSentenceLength, value)
-
-
-}
+//final class Word2Vector private[ml](
+//                                     override val uid: String,
+//                                     private val word2VectorModelLIB)
+//  extends Model[Word2VectorModel] with Word2VectorBase {
+//
+//  def this() = this(Identifiable.randomUID("w2v"))
+//
+//  def setInputCol(value: String): this.type = set(inputCol, value)
+//
+//  def setOutputCol(value: String): this.type = set(outputCol, value)
+//
+//  def setVectorSize(value: Int): this.type = set(vectorSize, value)
+//
+//  def setWindowSize(value: Int): this.type = set(windowSize, value)
+//
+//  def setStepSize(value: Int): this.type = set(stepSize, value)
+//
+//  def setNumPartitions(value: Int): this.type = set(numPartitions, value)
+//
+//  def setMaxIter(value: Int): this.type = set(maxIter, value)
+//
+//  def setSeed(value: Int): this.type = set(seed, value)
+//
+//  def setMinCount(value: Int): this.type = set(minCount, value)
+//
+//  def setMaxSentenceLength(value: Int): this.type = set(maxSentenceLength, value)
+//
+//
+//}
 
 class Word2VectorModel private[feature](
                                          override val uid: String,
@@ -176,7 +176,7 @@ class Word2VectorModel private[feature](
         val sum = Vectors.zeros(d)
         sentence.foreach { word =>
           bVectors.value.get(word).foreach { v =>
-                        BLAS2.axpy(1.0, v, sum)
+            BLAS2.axpy(1.0, v, sum)
           }
         }
 

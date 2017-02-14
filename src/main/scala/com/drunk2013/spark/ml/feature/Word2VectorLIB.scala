@@ -353,13 +353,11 @@ class Word2VectorLIB extends Serializable with Logging {
     }
 
     val syn0Global = Array.fill[Float](vocabSize * vectorSize)((initRandom.nextFloat() - 0.5f) / vectorSize)
-    val syn1Global = Array.fill[Float](vocabSize * vectorSize)
     var alpha = learningRate
 
 
     for (k <- 1 to numIterations) {
       val bcSyn0Global = sc.broadcast(syn0Global)
-      val bcSyn1Global = sc.broadcast(syn1Global)
     }
     null
   }
