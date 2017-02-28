@@ -40,8 +40,8 @@ class AssociationRules private[fpg](
     * @return 返回关联规则信息
     */
   def run[Item: ClassTag](freqItemsets: RDD[FreqItemset[Item]]): RDD[Rule[Item]] = {
-    //println(s"partitions count:${freqItemsets.getNumPartitions}")
-    // For candidate rule X => Y, generate (X, (Y, freq(X union Y)))
+    println(s"partitions count:${freqItemsets.getNumPartitions}")
+    //     For candidate rule X => Y, generate (X, (Y, freq(X union Y)))
     //把数据分裂出[前项,后项,频次]候选集.
     val candidates = freqItemsets.flatMap { itemset =>
       val items = itemset.items
@@ -49,8 +49,8 @@ class AssociationRules private[fpg](
       val result = items.flatMap { item =>
         println(s"items:${items.mkString("[", ",", "]")}")
         println(s"item:${item}")
-        //        println(s"item.partition:${items.partition(_ == item)._1.mkString(",")}")
-        //        println(s"item.partition:${items.partition(_ == item)._2.mkString(",")}")
+        println(s"item.partition:${items.partition(_ == item)._1.mkString(",")}")
+        println(s"item.partition:${items.partition(_ == item)._2.mkString(",")}")
 
         //按条件将序列拆分成两个新的序列，满足条件的放到第一个序列中，其余的放到第二个序列,=item的放入第一项,其余放入第二项
         items.partition(_ == item) match {

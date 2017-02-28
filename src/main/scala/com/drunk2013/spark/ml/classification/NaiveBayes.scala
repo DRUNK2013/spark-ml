@@ -1,10 +1,11 @@
 package com.drunk2013.spark.ml.classification
 
 import com.drunk2013.spark.util.{HasWeightCol, PredictorParams}
-import org.apache.spark.ml.classification.ProbabilisticClassificationModel
+import org.apache.spark.ml.classification.{ProbabilisticClassificationModel, ProbabilisticClassifier}
 import org.apache.spark.ml.linalg._
 import com.drunk2013.spark.util.Matrix
 import org.apache.spark.ml.param.{DoubleParam, Param, ParamMap, ParamValidators}
+import org.apache.spark.sql.Dataset
 
 /**
   * Created by shuangfu on 17-2-14.
@@ -34,10 +35,18 @@ private[classification] trait NaiveBayesParams extends PredictorParams with HasW
   final def getModelType: String = $(modelType)
 }
 
-//class NaiveBayes()
-//  extends ProbabilisticClassifier[Vector, NaiveBayes] {
-//
-//}
+class NaiveBayes(
+                  override val uid: String
+                )
+  extends ProbabilisticClassifier[Vector, NaiveBayes, NaiveBayesModel] {
+
+  override protected def train(dataset: Dataset[_]): NaiveBayesModel = {
+    null
+  }
+
+  override def copy(extra: ParamMap): NaiveBayes = defaultCopy(extra)
+
+}
 
 object NaiveBayes {
   val Multinomial: String = "multinomial"
@@ -60,6 +69,11 @@ object NaiveBayes {
       s"NavieBayes requires nonnegative feature values but found $v.")
   }
 
+  /**
+    * 二项式,向量值检测
+    *
+    * @param v
+    */
   private def requireZeroOneBernoulliValues(v: Vector): Unit = {
     val values = v match {
       case sv: SparseVector => sv.values
@@ -74,10 +88,13 @@ object NaiveBayes {
 
 /**
   * Model produced by [[NaiveBayes]]
+  * 贝叶斯模型,pi:分类标签值的对数,向量,一位数组,1行,每个元素时一个分类
+  * theta:每组分类的特征值,table结构.行数是分类数,即pi的size大小,列(columns)为纬度信息
   *
   * @param pi    log of class priors, whose dimension is C (number of classes)
   * @param theta log of class conditional probabilities, whose dimension is C (number of classes)
   *              by D (number of features)
+  *
   */
 class NaiveBayesModel(
                        override val uid: String,
@@ -182,5 +199,9 @@ class NaiveBayesModel(
   override def toString(): String = {
     s"NaiveBayesModel (uid=$uid) with ${pi.size} classes"
   }
+
+}
+
+object NaiveBayesModel {
 
 }
