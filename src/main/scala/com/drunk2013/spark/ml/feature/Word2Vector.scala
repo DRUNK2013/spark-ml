@@ -3,6 +3,7 @@ package com.drunk2013.spark.ml.feature
 import com.drunk2013.spark.util.{HasMaxIter, HasSeed, HasStepSize}
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.linalg.{BLAS2, Vectors}
+import org.apache.spark.ml.linalg.{BLAS, Vectors}
 import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators, Params}
 import org.apache.spark.ml.util.{Identifiable}
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
