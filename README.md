@@ -10,11 +10,11 @@ fpg包含三个模块:
 2.NLP特征提取
 =====
 TF-IDF
-==
+====
 TF-IDF全称:term frequency - inverse doucument frequency(词频-逆向文件频率).<br>
 TF-IDF是一种统计方法，用以评估一字词对于一个文件集或一个语料库中的其中一份文件的重要程度. <br>
 TF(词频)
-==
+====
 TF在spark中,通过HashingTF实现,对每个词取Hash,并计算词频.
 IDF(逆向文件词频)
 ====
