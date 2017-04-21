@@ -11,7 +11,7 @@ import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructT
   * Author : DRUNK
   * email :len1988.zhang@gmail.com
   */
-class DataFrameWriterTest extends SharedSQLContext {
+class DataFrameWriterSuite extends SharedSQLContext {
 
   test("testJdbc") {
     val url = "jdbc:mysql:192.168.1.100:test"
