@@ -3,8 +3,10 @@
 =====
 fpg包含三个模块:
 =====
+
 1.AssociationRules,输入数据集RDD[Item].把数据每项分裂成[前项,后项,频次]形式关联规则候选集.然后候选集和输入数据集进行join,并按照频次过滤,找出候选集<br>
 2.FPGrowth频繁模式树Growth.其中把数据集吸写入到FPTree数据模型中,最后从FPTree抽取所有的符合频次的频繁集.<br>
+
 2.NLP特征提取
 =====
 TF-IDF
