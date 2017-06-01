@@ -1,4 +1,4 @@
-#<h1 style='float:center'>spark Machine Learning 模块源码练习</h1>
+#<h1 style='float:center'>spark Machine Learning 模块源码</h1>
 1.fpg频繁模式数据挖掘，包括关联规则、频繁模式、序列模式
 =====
 fpg包含三个模块:
